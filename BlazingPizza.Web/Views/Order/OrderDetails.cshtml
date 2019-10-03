@@ -1,0 +1,18 @@
+﻿
+@using BlazingPizza
+
+@{
+    ViewData["Title"] = "Order Details";
+    var orderWithStatus = Model as OrderWithStatus;
+}
+
+@if (orderWithStatus is null)
+{
+    <div class="main">
+        <p>Sorry. No recent order was found.</p>
+    </div>
+}
+else
+{
+    <partial name="_OrderDetails.cshtml" model="@orderWithStatus" />
+}

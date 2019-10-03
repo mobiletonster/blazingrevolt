@@ -1,0 +1,38 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using BlazingPizza
+@{ 
+    var orderWithStatus = Model as OrderWithStatus;
+}
+<div class="track-order-body">
+    <div class="track-order-details">
+        @foreach (var pizza in orderWithStatus.Order.Pizzas)
+        {
+            <p>
+                <strong>
+                    @(pizza.Size)"
+                    @pizza.Special.Name
+                    ($@pizza.GetFormattedTotalPrice())
+                </strong>
+            </p>
+
+            <ul>
+                @foreach (var topping in pizza.Toppings)
+                {
+                    <li>+ @topping.Topping.Name</li>
+                }
+            </ul>
+        }
+
+        <p>
+            <strong>
+                Total price:
+                $@orderWithStatus.Order.GetFormattedTotalPrice()
+            </strong>
+        </p>
+    </div>
+    <div class="track-order-map">
+        <div id="order-map" style="height: 100%; width: 100%;"></div>
+    </div>
+</div>

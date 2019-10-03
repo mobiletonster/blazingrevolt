@@ -1,0 +1,136 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@using BlazingPizza
+@{
+    var Pizza = Model as Pizza;
+    var Toppings = ViewData["Toppings"] as List<Topping>;
+}
+
+<div class="dialog-container">
+    <div class="dialog">
+        <div class="dialog-title">
+            <h2>@Pizza.Special.Name</h2>
+            @Pizza.Special.Description
+        </div>
+        <form class="dialog-body">
+            <div>
+                <label>Size:</label>
+                <input type="range" min="@Pizza.MinimumSize" max="@Pizza.MaximumSize" step="1" value="@Pizza.Size" oninput="updateSize(this.value)" />
+                <span class="size-label">
+                    <span id="size">@(Pizza.Size)</span> ($<span class="size-price">@(Pizza.GetFormattedTotalPrice())</span>)
+                </span>
+            </div>
+            <div>
+                <label>Extra Toppings:</label>
+                @if (Toppings == null)
+                {
+                    <select class="custom-select" disabled>
+                        <option>(loading...)</option>
+                    </select>
+                }
+                else
+                {
+                    <div id="max-toppings-message" style="display:none;">(maximum reached)</div>
+                    <select id="toppings-list" class="custom-select" onchange="toppingSelected(this)">
+                        <option value="-1" disabled selected>(select)</option>
+                        @for (var i = 0; i < Toppings.Count; i++)
+                        {
+                            <option value="@i">@Toppings[i].Name - ($@(Toppings[i].GetFormattedPrice()))</option>
+                        }
+                    </select>
+                }
+            </div>
+            <div id="selected-toppings" class="toppings"></div>
+        </form>
+        <div class="dialog-buttons">
+            <button class="btn btn-secondary mr-auto" onclick="cancel()">Cancel</button>
+            <span class="mr-center">
+                Price: <span id="price" class="price size-price">@(Pizza.GetFormattedTotalPrice())</span>
+            </span>
+            <button class="btn btn-success ml-auto" onclick="onConfirm()">Order ></button>
+        </div>
+    </div>
+</div>
+
+<template id="topping-template">
+    <div class="topping" data-id="{{topping-id}}">
+        <span>{{topping-name}}</span>
+        <span class="topping-price">{{topping-price}}</span>
+        <button type="button" class="delete-topping" onclick="removeTopping('{{topping-id}}')">x</button>
+    </div>
+</template>
+
+<script type="text/javascript">
+    var currentPizza = JSON.parse('@Html.Raw(Json.Serialize(Pizza))');
+    var toppingList = JSON.parse('@Html.Raw(Json.Serialize(Toppings))');
+    var defaultSize = @Pizza.DefaultSize;
+
+    function updateSize(size) {
+        document.getElementById("size").innerHTML = size;
+        currentPizza.size = size;
+        renderPrice();
+    }
+
+    function toppingSelected(selected) {
+        var pizzaTopping = {};
+        pizzaTopping.id = 0;
+        pizzaTopping.topping = toppingList[selected.value];
+        currentPizza.toppings.push(pizzaTopping);
+        renderToppings();
+        renderPrice();
+    }
+
+    function removeTopping(topping) {
+        currentPizza.toppings.splice(topping,1);
+        renderToppings();
+        renderPrice();
+    }
+
+    function renderPrice() {
+        document.querySelectorAll(".size-price").forEach(i => i.innerHTML = getTotalPrice().toFixed(2));
+    }
+
+    function renderToppings() {
+        var toppingsTarget = document.getElementById("selected-toppings");
+        var tags="";
+        var i = 0;
+        currentPizza.toppings.forEach(t => {
+            var template = document.getElementById("topping-template").innerHTML.toString();
+            template = template.replace("{{topping-id}}", i.toString());
+            template = template.replace("{{topping-id}}", i.toString());
+            template = template.replace("{{topping-name}}", t.topping.name);
+            template = template.replace("{{topping-price}}", t.topping.price.toFixed(2));
+            tags += template;
+            i++;
+        });
+        toppingsTarget.innerHTML = tags;
+
+        if (currentPizza.toppings.length >= 6) {
+            document.getElementById("max-toppings-message").style = "display:block";
+            document.getElementById("toppings-list").style = "display:none";
+        } else {
+            document.getElementById("max-toppings-message").style = "display:none";
+            document.getElementById("toppings-list").style = "display:block";
+        }
+    }
+
+    function cancel() {
+        document.getElementById('dialog').innerHTML = "";
+    }
+
+    function onConfirm() {
+        order.pizzas.push(currentPizza);
+        sessionStorage["currentOrder"] = JSON.stringify(order);
+        renderSideBar();
+    }
+
+    function getTotalPrice()
+    {
+        var basePrice = (currentPizza.size / defaultSize) * currentPizza.special.basePrice;
+        var toppings = currentPizza.toppings.reduce((total, tp) => total + tp.topping.price, 0)
+        return basePrice + toppings;
+    }
+
+</script>

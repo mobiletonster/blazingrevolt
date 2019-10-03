@@ -1,0 +1,108 @@
+﻿@using BlazingPizza
+@using  Newtonsoft.Json
+@{
+    ViewData["Title"] = "Home";
+    List<PizzaSpecial> specials = Model as List<PizzaSpecial>;
+}
+
+<div class="main">
+    <ul class="pizza-cards">
+        @if (specials != null)
+        {
+            @foreach (var special in specials)
+            {
+                <li id="@special.Id" style="background-image: url('@special.ImageUrl')" onclick='configurePizza(@special.Id)' data-special='@Html.Raw(Json.Serialize(special))'>
+                    <div class="pizza-info">
+                        <span class="title">@special.Name</span>
+                        @special.Description
+                        <span class="price">@special.GetFormattedBasePrice()</span>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</div>
+<div id="order-sidebar" class="sidebar">
+    <partial name="~/Views/Order/_OrderSideBar.cshtml" />
+</div>
+<span id="dialog"></span>
+
+<script type="text/javascript">
+    var order = {};
+    order.pizzas = [];
+
+    function configurePizza(specialId) {
+        var special = JSON.parse(document.getElementById(specialId).dataset.special);
+        var targetBlock = document.getElementById('dialog') // locate the new html injection target
+        var payload = new URLSearchParams(special).toString()
+
+        fetch(`configureDialog?${payload}`, {
+            method: 'get',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html'
+            }
+        })
+            .then(resp => resp.text())
+            .then(data => {
+                targetBlock.innerHTML = data; // inject the received html block
+                targetBlock.querySelectorAll('script')  // find all injected script blocks and register them with the DOM
+                    .forEach(scriptElem => {
+                        var scriptBlock = document.createElement('script');
+                        for (var i = 0; i < scriptElem.attributes.length; i++) {
+                            var att = scriptElem.attributes[i];
+                            scriptBlock.setAttribute(att.name, att.value);
+                        }
+                        scriptBlock.innerHTML = scriptElem.innerText;
+                        targetBlock.appendChild(scriptBlock);
+                        scriptElem.remove(); // remove the original inject, un-registered script block
+                    })
+            })
+            .catch(err => { });
+    }
+
+    function renderSideBar() {
+        var targetBlock = document.getElementById("order-sidebar");
+        fetch(`pizza/order`, {
+            method: 'post',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        }).then(resp => resp.text())
+            .then(data => {
+                targetBlock.innerHTML = data; // inject the received html block
+                targetBlock.querySelectorAll('script')  // find all injected script blocks and register them with the DOM
+                    .forEach(scriptElem => {
+                        var scriptBlock = document.createElement('script');
+                        for (var i = 0; i < scriptElem.attributes.length; i++) {
+                            var att = scriptElem.attributes[i];
+                            scriptBlock.setAttribute(att.name, att.value);
+                        }
+                        scriptBlock.innerHTML = scriptElem.innerText;
+                        targetBlock.appendChild(scriptBlock);
+                        scriptElem.remove(); // remove the original inject, un-registered script block
+                    });
+            })
+            .catch(err => { });
+
+        document.getElementById('dialog').innerHTML = "";
+    }
+
+    function removeItem(pizzaIndex) {
+        var result = confirm(`Remove ${order.pizzas[pizzaIndex].special.name} pizza from the order?`);
+        if (result) {
+            order.pizzas.splice(pizzaIndex, 1);
+            sessionStorage["currentOrder"] = JSON.stringify(order);
+            renderSideBar();
+        }
+    }
+
+    if ("currentOrder" in sessionStorage) {
+        order = JSON.parse(sessionStorage["currentOrder"]);
+        renderSideBar();
+    }
+
+</script>

@@ -1,0 +1,22 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<div class="user-info">
+    @if (User.Identity.IsAuthenticated)
+    {
+    <img src="img/user.svg" />
+    <div>
+        <span class="username">@User.Identity.Name</span>
+        <a id="sign-out" class="sign-out" href='user/signout'>Sign out</a>
+    </div>
+    }
+    else
+    {
+    <a class="sign-in" href="user/signin">Sign in</a>
+    }
+</div>
+
+<script type="text/javascript">
+    document.getElementById('sign-out').href = 'user/signout?returnUrl=' + window.location.origin;
+</script>
