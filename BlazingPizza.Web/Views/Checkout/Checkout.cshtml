@@ -1,0 +1,128 @@
+﻿@using BlazingPizza
+@{
+    ViewData["Title"] = "Checkout";
+}
+<style type="text/css" title="validation">
+    input:required:invalid, input:focus:invalid {
+        /* insert your own styles for invalid form input */
+        -moz-box-shadow: none;
+    }
+</style>
+
+<div class="main">
+    <div class="checkout-cols">
+        <div class="checkout-order-details">
+            <h4>Review order</h4>
+            <div id="order-details"></div>
+        </div>
+        <div class="checkout-delivery-address">
+            <h4>Deliver to...</h4>
+            <div id="address-details"></div>
+        </div>
+
+    </div>
+    <button class="checkout-button btn btn-warning" type="button" onclick="placeOrder()">
+        Place order
+    </button>
+</div>
+
+<script type="text/javascript">
+    if (sessionStorage["currentOrder"]) {
+        var order = JSON.parse(sessionStorage["currentOrder"]);
+        var targetBlock = document.getElementById("order-details");
+        fetch(`checkout/details`, {
+            method: 'post',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        }).then(resp => resp.text())
+            .then(data => {
+                targetBlock.innerHTML = data; // inject the received html block
+                targetBlock.querySelectorAll('script')  // find all injected script blocks and register them with the DOM
+                    .forEach(scriptElem => {
+                        var scriptBlock = document.createElement('script');
+                        for (var i = 0; i < scriptElem.attributes.length; i++) {
+                            var att = scriptElem.attributes[i];
+                            scriptBlock.setAttribute(att.name, att.value);
+                        }
+                        scriptBlock.innerHTML = scriptElem.innerText;
+                        targetBlock.appendChild(scriptBlock);
+                        scriptElem.remove(); // remove the original inject, un-registered script block
+                    });
+            })
+            .catch(err => { });
+
+        var addressBlock = document.getElementById("address-details");
+        //             <partial name="_AddressEditor" />
+        fetch('checkout/recentaddress', {
+            method: 'get',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'application/json'
+            }
+        }).then(resp => resp.text())
+            .then(data => {
+                addressBlock.innerHTML = data; // inject the received html block
+                addressBlock.querySelectorAll('script')  // find all injected script blocks and register them with the DOM
+                    .forEach(scriptElem => {
+                        var scriptBlock = document.createElement('script');
+                        for (var i = 0; i < scriptElem.attributes.length; i++) {
+                            var att = scriptElem.attributes[i];
+                            scriptBlock.setAttribute(att.name, att.value);
+                        }
+                        scriptBlock.innerHTML = scriptElem.innerText;
+                        targetBlock.appendChild(scriptBlock);
+                        scriptElem.remove(); // remove the original inject, un-registered script block
+                    });
+            })
+            .catch(err => { });
+    }
+
+    function placeOrder() {
+        if (validate()) {
+
+            var address = {};
+            document.querySelectorAll('input').forEach(field => {
+                address[field.name] = field.value;
+            });
+
+            order.deliveryAddress = address;
+
+            fetch(`orders`, {
+                method: 'post',
+                credentials: "same-origin",
+                headers: {
+                    'Accept': 'text/html',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(order)
+            }).then(resp => resp.json())
+            .then(o => {
+                resetOrder();
+                window.location.href = `myorders/${o.orderId}`;
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        }
+    }
+
+    function validate() {
+        var myStyle = document.querySelector('[title=validation]').sheet; // get the style at the top of the page
+        myStyle.deleteRule('input:required:invalid, input:focus:invalid'); // remove the existing rule first.
+        myStyle.insertRule("input:required:invalid, input:focus:invalid { border: solid 2px red }", 0); // add a rule to light up invalid boxes.
+        addressForm.reportValidity(); // turn on the validation hints
+        return addressForm.checkValidity(); // return true if form is valid, false if not.
+    }
+
+    function resetOrder() {
+        order = {};
+        order.pizzas = [];
+        sessionStorage.removeItem("currentOrder");
+    }
+</script>
+

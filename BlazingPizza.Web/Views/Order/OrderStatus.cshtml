@@ -1,0 +1,69 @@
+﻿@using BlazingPizza
+@{
+    ViewData["Title"] = "Order Status";
+    var ordersWithStatus = Model as List<OrderWithStatus>;
+}
+<div class="main">
+    @if (ordersWithStatus == null || ordersWithStatus.Count == 0)
+    {
+        <h2>No orders placed</h2>
+        <a class="btn btn-success" href="">Order some pizza</a>
+    }
+    else
+    {
+        <div class="list-group orders-list">
+            @foreach (var item in ordersWithStatus)
+            {
+                <div class="list-group-item">
+                    <div class="col">
+                        <h5>@item.Order.CreatedTime.ToLongDateString()</h5>
+                        Items:
+                        <strong>@item.Order.Pizzas.Count()</strong>;
+                        Total price:
+                        <strong>$@item.Order.GetFormattedTotalPrice()</strong>
+                    </div>
+                    <div class="col">
+                        Status: <strong>@item.StatusText</strong>
+                    </div>
+                    <div class="col flex-grow-0">
+                        <a href="myorders/@item.Order.OrderId" onclick="getOrderDetails(@item.Order.OrderId)" class="btn btn-success">
+                            Track &gt;
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+<span id="order-details"></span>
+
+<script type="text/javascript">
+    function getOrderDetails(orderId) {
+        var targetBlock = document.getElementById("order-details");
+
+         fetch(`myorders/${orderId}`, {
+            method: 'get',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html'
+            }
+         }).then(resp => resp.text())
+            .then(data => {
+                targetBlock.innerHTML = data; // inject the received html block
+                targetBlock.querySelectorAll('script')  // find all injected script blocks and register them with the DOM
+                    .forEach(scriptElem => {
+                        var scriptBlock = document.createElement('script');
+                        for (var i = 0; i < scriptElem.attributes.length; i++) {
+                            var att = scriptElem.attributes[i];
+                            scriptBlock.setAttribute(att.name, att.value);
+                        }
+                        scriptBlock.innerHTML = scriptElem.innerText;
+                        targetBlock.appendChild(scriptBlock);
+                        scriptElem.remove(); // remove the original inject, un-registered script block
+                    })
+            })
+            .catch(err => { });
+    }
+</script>
+
+

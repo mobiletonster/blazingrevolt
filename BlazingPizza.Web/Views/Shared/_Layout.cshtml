@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <base href="/" />
+    <link rel="icon" href="data:;base64,=" />
+    <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <title>@ViewData["Title"] - Blazing Pizza</title>
+    <script src="~/js/leaflet/leaflet.js"></script>
+    <script src="~/js/deliveryMap.js"></script>
+    <link href="~/js/leaflet/leaflet.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="top-bar">
+        <img class="logo" src="img/logo.svg" />
+
+        <a id="home" href="" class="nav-tab">
+            <img src="img/pizza-slice.svg" />
+            <div>Get Pizza</div>
+        </a>
+        <a id="myorders" href="myorders" class="nav-tab">
+            <img src="img/bike.svg" />
+            <div>My Orders</div>
+        </a>
+        <partial name="_LoginDisplay" />
+    </div>
+
+    <div class="content">
+        @RenderBody()
+    </div>
+
+    @RenderSection("Scripts", required: false)
+
+    <script type="text/javascript">
+        // this code is used to set the active tab class by inspecting the route
+        var pathname = window.location.pathname;
+        switch (pathname) {
+            case "/":
+                document.getElementById("home").classList.add("active");
+                break;
+            case "/myorders":
+                document.getElementById("myorders").classList.add("active");
+                break;
+            default:
+                if (pathname.startsWith("/myorders")) {
+                    document.getElementById("myorders").classList.add("active");
+                }
+                break;
+        }
+    </script>
+</body>
+</html>

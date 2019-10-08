@@ -1,0 +1,48 @@
+﻿@using BlazingPizza
+@{
+    var address = (Model as Address)??new Address();
+    
+}
+    <form autocomplete="on" id="addressForm">
+        <div class="form-field">
+            <label for="name">Name:</label>
+            <div>
+                <input type="text" id="name" name="name" value="@address.Name" required minlength="3" maxlength="100" />
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="address-line1">Line 1:</label>
+            <div>
+                <input id="address-line1" name="line1" value="@address.Line1" required maxlength="100" />
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="address-line2">Line 2:</label>
+            <div>
+                <input id="address-line2" name="line2" value="@address.Line2" maxlength="100" />
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="city">City:</label>
+            <div>
+                <input id="city" name="city" value="@address.City" required maxlength="50" />
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="state">State:</label>
+            <div>
+                <input id="state" name="region" value="@address.Region" required maxlength="20" />
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="postal-code">Postal code:</label>
+            <div>
+                <input id="postal-code" name="postalCode" value="@address.PostalCode" required maxlength="20" />
+            </div>
+        </div>
+    </form>

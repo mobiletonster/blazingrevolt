@@ -1,0 +1,71 @@
+﻿
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using BlazingPizza
+@{ 
+    var orderWithStatus = Model as OrderWithStatus;
+    var invalidOrder = ViewData["InvalidOrder"] as bool?;
+}
+<div class="main">
+    @if (invalidOrder.HasValue && invalidOrder.Value)
+    {
+        <h2>Nope</h2>
+        <p>Sorry, this order could not be loaded.</p>
+    }
+    else if (orderWithStatus == null)
+    {
+        <text>Loading...</text>
+    }
+    else
+    {
+<div class="track-order">
+    <div class="track-order-title">
+        <h2>
+            Order placed @orderWithStatus.Order.CreatedTime.ToLongDateString()
+        </h2>
+        <p class="ml-auto mb-0">
+            Status: <strong id="status-text">@orderWithStatus.StatusText</strong>
+        </p>
+    </div>
+    <partial name="_OrderDetailsBody" model="@orderWithStatus" />
+</div>
+ }
+</div>
+<script src="~/js/deliveryMap.js"></script>
+<script type="text/javascript">
+    //  var markers = JSON.parse('@Json.Serialize(orderWithStatus.MapMarkers)');
+    var orderId = @orderWithStatus.Order.OrderId;
+    var orderStatus = '@orderWithStatus.StatusText';
+    var timerId = null;
+    function pollStatus() {
+        if (orderStatus != 'Delivered') {
+            updateStatus();
+            timerId = setTimeout(pollStatus, 2000);
+        } 
+    }
+
+    function updateStatus() {
+        var target = document.getElementById('status-text');
+
+        fetch(`/myorders/${orderId}/status`, {
+            method: 'get',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html'
+            }
+        }).then(resp => resp.json())
+            .then(data => {
+                orderStatus = data;
+                if (orderStatus.statusText == 'Delivered') {
+                    clearTimeout(timerId);
+                } else if (orderStatus.statusText == 'Out for delivery') {
+                    deliveryMap.zoom
+                    deliveryMap.showOrUpdate('order-map',orderStatus.mapMarkers);
+                }
+                target.innerHTML = orderStatus.statusText;
+        });
+    }
+
+    pollStatus();
+</script>

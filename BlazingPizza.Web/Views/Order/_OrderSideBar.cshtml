@@ -1,0 +1,46 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using BlazingPizza
+@{ var order = Model as Order; }
+
+@if (order != null && order.Pizzas.Any())
+{
+    <div class="order-contents">
+        <h2>Your order</h2>
+
+        @{ int x = 0; }
+        @foreach (var configuredPizza in order.Pizzas)
+        {
+            <div class="cart-item">
+                <a onclick="removeItem('@x')" class="delete-item">x</a>
+                <div class="title">@(configuredPizza.Size)" @configuredPizza.Special.Name</div>
+                <ul>
+                    @foreach (var topping in configuredPizza.Toppings)
+                    {
+                        <li>+ @topping?.Topping?.Name</li>
+                    }
+                </ul>
+                <div class="item-price">
+                    @configuredPizza.GetFormattedTotalPrice()
+                </div>
+            </div>
+            x++;
+        }
+    </div>
+    <div class="order-total @(order.Pizzas.Any() ? "" : "hidden")">
+        Total:
+        <span class="total-price">@order.GetFormattedTotalPrice()</span>
+        <a href="checkout" class="btn btn-warning" disabled="@(order.Pizzas.Count == 0)" >
+            Order >
+        </a>
+    </div>
+}
+else
+{
+    <div class="empty-cart">Choose a pizza<br>to get started</div>
+}
+
+
+
+
