@@ -92,15 +92,29 @@
 
             order.deliveryAddress = address;
 
-            fetch(`orders`, {
-                method: 'post',
-                credentials: "same-origin",
-                headers: {
-                    'Accept': 'text/html',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(order)
-            }).then(resp => resp.json())
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    order.deliveryLocation = {
+                        latitude: position.coords.latitude, longitude: position.coords.longitude
+                    }
+                    sendOrder();
+                });
+            } else {
+                sendOrder();
+            }
+        }
+    }
+
+    function sendOrder() {
+        fetch(`orders`, {
+            method: 'post',
+            credentials: "same-origin",
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        }).then(resp => resp.json())
             .then(o => {
                 resetOrder();
                 window.location.href = `myorders/${o.orderId}`;
@@ -108,7 +122,6 @@
             .catch(err => {
                 console.log(err);
             });
-        }
     }
 
     function validate() {

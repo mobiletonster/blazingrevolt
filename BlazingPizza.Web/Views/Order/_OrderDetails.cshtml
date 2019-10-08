@@ -47,7 +47,8 @@
 
     function updateStatus() {
         var target = document.getElementById('status-text');
-
+        var preparing = document.getElementById('preparing-pizza');
+        var delivered = document.getElementById('delivered-pizza');
         fetch(`/myorders/${orderId}/status`, {
             method: 'get',
             credentials: "same-origin",
@@ -58,8 +59,13 @@
             .then(data => {
                 orderStatus = data;
                 if (orderStatus.statusText == 'Delivered') {
+                    preparing.style.display = "none";
+                    delivered.style.display = "block";
                     clearTimeout(timerId);
+                } else if (orderStatus.statusText == 'Preparing') {
+                    preparing.style.display = "block";               
                 } else if (orderStatus.statusText == 'Out for delivery') {
+                    preparing.style.display = "none";
                     deliveryMap.zoom
                     deliveryMap.showOrUpdate('order-map',orderStatus.mapMarkers);
                 }

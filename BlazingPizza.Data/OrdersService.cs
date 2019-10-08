@@ -45,7 +45,11 @@ namespace BlazingPizza.Data
         public async Task<int> SaveOrderAsync(Order order, string userId)
         {
             order.CreatedTime = DateTime.Now;
-            order.DeliveryLocation = new LatLong(51.5001, -0.1239);
+            if(order.DeliveryLocation is null)
+            {
+                order.DeliveryLocation = new LatLong(51.5001, -0.1239);
+            }
+
             order.UserId = userId;
             order.DeliveryAddress.UserId = userId;
 
