@@ -1,0 +1,58 @@
+﻿
+@{
+    ViewData["Title"] = "Sign In";
+    var returnUrl = ViewData["ReturnUrl"];
+}
+<style>
+    .login-list {
+        margin: 10px;
+    }
+
+        .login-list li {
+            border-radius: 5px;
+            list-style: none;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            width: 200px;
+        }
+
+            .login-list li a {
+                color: white;
+                text-decoration: none;
+            }
+
+    #google {
+        background-color: #dd4b3c;
+    }
+
+    #microsoft {
+        background-color: #044185;
+    }
+
+    #twitter {
+        background-color: #00aced;
+    }
+
+    #facebook {
+        background-color: #3c5899;
+    }
+</style>
+<div class="main">
+    <h2>Choose a provider</h2>
+    <ul class="login-list">
+        <li id="google">
+            <a href="/signin?returnUrl=@returnUrl&provider=google"><i class="fab fa-google fa-lg"></i> Login with Google</a>
+        </li>
+        <li id="microsoft">
+            <a href="/signin?returnUrl=@returnUrl&provider=microsoft"><i class="fab fa-microsoft fa-lg"></i> Login with Microsoft</a>
+        </li>
+        <li id="twitter">
+            <a href="/signin?returnUrl=@returnUrl&provider=twitter"><i class="fab fa-twitter fa-lg"></i> Login with Twitter</a>
+        </li>
+        <li id="facebook">
+            <a href="/signin?returnUrl=@returnUrl&provider=facebook"><i class="fab fa-facebook fa-lg"></i> Login with Facebook</a>
+        </li>
+    </ul>
+</div>
+

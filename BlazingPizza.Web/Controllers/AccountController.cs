@@ -12,17 +12,23 @@ namespace BlazingPizza.Web.Controllers
     {
         [HttpGet("Account/Login")]
         [HttpGet("user/signin")]
-        public IActionResult Login(string returnUrl = "/")
+        public IActionResult SignIn(string returnUrl = "/")
         {
-            return Challenge(new AuthenticationProperties() { RedirectUri = returnUrl });
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpGet("signin")]
+        public IActionResult Login(string provider, string returnUrl = "/")
+        {
+            return Challenge(new AuthenticationProperties() { RedirectUri = returnUrl }, provider);
         }
 
         [HttpGet("user/signout")]
         public async Task<IActionResult> Logout(string returnUrl = "/")
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Redirect($"https://signin.churchofjesuschrist.org/signout?goto={returnUrl}");
-            // return Redirect(returnUrl);
+            return Redirect(returnUrl);
         }
     }
 }

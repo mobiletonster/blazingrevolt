@@ -48,44 +48,26 @@ namespace BlazingPizza.Web
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = "churchaccount";
+                    // you can enable a default challenge scheme by using the line below:
+                    // options.DefaultChallengeScheme = "microsoft";
                 })
                 .AddCookie()
-                .AddOpenIdConnect("churchaccount", options =>
+                .AddMicrosoftAccount("microsoft", options => {
+                    options.ClientId = Configuration["Authentication:Microsoft:ClientId"];
+                    options.ClientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
+                    options.CallbackPath = "/mstoken";
+                })
+                .AddGoogle("google", options =>
                 {
-                    options.ClientId = Configuration["OAuth:ClientId"];
-                    options.ClientSecret = Configuration["OAuth:ClientPassword"];
-                    options.Authority = Configuration["OAuth:Issuer"];
-                    options.CallbackPath = new PathString("/token");
-                    options.ResponseType = OpenIdConnectResponseType.Code;
-                    options.SaveTokens = true;
-                    options.GetClaimsFromUserInfoEndpoint = true;
-                    options.UseTokenLifetime = true;
-                    options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-                    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
-                    options.ClaimActions.MapJsonKey("lang", "ui_locales");
-                    options.ClaimActions.MapJsonKey("id_token", "id_token");
-                    string access_token = string.Empty;
-                    string id_token = string.Empty;
-                    options.Events = new OpenIdConnectEvents
-                    {
-                        OnTokenResponseReceived = async (context) =>
-                        {
-                            // stash the access token for later use so we can stuff it into the Identity
-                            access_token = context.TokenEndpointResponse.AccessToken;
-                            id_token = context.TokenEndpointResponse.IdToken;
-                            await Task.CompletedTask;
-                        }
-                        ,
-                        OnTokenValidated = async (context) =>
-                        {
-                            // It's later now, so place the access token into the Identity Principal
-                            (context.Principal.Identity as ClaimsIdentity)?.AddClaim(new Claim("access_token", access_token));
-                            (context.Principal.Identity as ClaimsIdentity)?.AddClaim(new Claim("id_token", id_token));
-                            await Task.CompletedTask;
-                        }
-                    };
-
+                    options.ClientId = Configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                    options.CallbackPath = "/gtoken";
+                })
+                .AddFacebook("facebook", options =>
+                {
+                    options.ClientId = Configuration["Authentication:Facebook:ClientId"];
+                    options.ClientSecret = Configuration["Authentication:Facebook:ClientSecret"];
+                    options.CallbackPath = "/ftoken";
                 })
                 .AddTwitter("twitter",twitterOptions =>
                 {
@@ -115,9 +97,7 @@ namespace BlazingPizza.Web
 
             }
 
-            // app.UseHttpsRedirection();
             app.UseStaticFiles();
-            // app.UseRouting();
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseMvc(routes =>
@@ -126,11 +106,6 @@ namespace BlazingPizza.Web
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapControllers();
-            //    endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
-            //});
         }
     }
 }
